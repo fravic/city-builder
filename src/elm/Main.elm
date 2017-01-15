@@ -63,7 +63,7 @@ update msg model =
       in
         (
           { model | game = nextGame },
-          write model.game
+          write nextGame
         )
     ReadGame nextGame ->
       ( { model | game = nextGame }, Cmd.none )
