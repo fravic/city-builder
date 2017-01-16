@@ -7,7 +7,7 @@ var app = Elm.Main.embed(document.getElementById('main'));
 const TEST_GAME_ID = 'testGame01';
 
 // Set up ports for JS interop
-app.ports.write.subscribe(function(game) {
+app.ports.writePort.subscribe(function(game) {
   console.log("Writing game to Firebase", game);
   writeGame(game);
 });
@@ -29,5 +29,5 @@ function writeGame(game) {
 var gameRef = firebase.database().ref(TEST_GAME_ID);
 gameRef.on('value', function(gameObj) {
   console.log("Reading game from Firebase", gameObj.val());
-  app.ports.read.send(gameObj.val());
+  app.ports.readPort.send(gameObj.val());
 });

@@ -1,9 +1,12 @@
 port module Main exposing (..)
+
+import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing ( onClick )
 
-import Components.Game exposing ( game )
+import Model exposing (..)
+import Components.Game exposing ( gameDisplay )
 
 
 -- APP
@@ -18,17 +21,18 @@ main =
 
 
 -- MODEL
-type alias Model = {
-  game: Game
-}
-
-type alias Game = {
-  turnCounter: Int
-}
-
 initialGame : Game
 initialGame =
-  { turnCounter = 0
+  {
+    players = Dict.fromList
+      [ ("p0", { cityId = "c0" })
+      , ("p1", { cityId = "c1" })
+      ]
+  , cities = Dict.fromList
+      [ ("c0", { name = "San Francisco" })
+      , ("c1", { name = "Toronto" })
+      ]
+  , turnCounter = 0
   }
 
 init : (Model, Cmd Msg)
@@ -39,18 +43,32 @@ init =
 
 
 -- PORTS
-port write : Game -> Cmd msg
-port read : (Game -> msg) -> Sub msg
+port writePort : PortableGame -> Cmd msg
+port readPort : (PortableGame -> msg) -> Sub msg
+
+gameToPortable : Game -> PortableGame
+gameToPortable game =
+  { game |
+      players = Dict.toList game.players
+    , cities = Dict.toList game.cities
+  }
+
+gameFromPortable : PortableGame -> Game
+gameFromPortable portGame =
+  { portGame |
+      players = Dict.fromList portGame.players
+    , cities = Dict.fromList portGame.cities
+  }
 
 
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
 subscriptions model =
-  read ReadGame
+  readPort ReadGame
 
 
 -- UPDATE
-type Msg = NoOp | NextTurn | ReadGame Game
+type Msg = NoOp | NextTurn | ReadGame PortableGame
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
@@ -63,10 +81,10 @@ update msg model =
       in
         (
           { model | game = nextGame },
-          write nextGame
+          writePort (gameToPortable nextGame)
         )
-    ReadGame nextGame ->
-      ( { model | game = nextGame }, Cmd.none )
+    ReadGame portGame ->
+      ( { model | game = (gameFromPortable portGame) }, Cmd.none )
 
 
 -- VIEW
@@ -74,7 +92,7 @@ view : Model -> Html Msg
 view model =
   div [ class "container" ][
     div [ class "row" ][
-      game model.game.turnCounter,
+      gameDisplay model.game,
       button [ class "btn", onClick NextTurn ] [ text "Next Turn" ]
     ]
   ]
