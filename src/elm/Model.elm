@@ -1,4 +1,4 @@
-module Model exposing (Model, Game, PortableGame, Player, City)
+module Model exposing (..)
 
 import Dict exposing (Dict)
 
@@ -8,12 +8,16 @@ type alias Model = {
 
 type alias Game = {
   cities: Dict String City,
+  cityBlocks: Dict String CityBlock,
+  cityBlockTypes: Dict String CityBlockType,
   players: Dict String Player,
   turnCounter: Int
 }
 
 type alias PortableGame = {
   cities: List (String, City),
+  cityBlocks: List (String, CityBlock),
+  cityBlockTypes: List (String, PortableCityBlockType),
   players: List (String, Player),
   turnCounter: Int
 }
@@ -25,3 +29,21 @@ type alias Player = {
 type alias City = {
   name: String
 }
+
+type alias CityBlock = {
+  cityBlockTypeId: String
+}
+
+type alias CityBlockType = {
+  name: String,
+  cost: Int,
+  effects: List CityBlockEffect
+}
+
+type alias PortableCityBlockType = {
+  name: String,
+  cost: Int,
+  effects: List (String, Int)
+}
+
+type CityBlockEffect = NoEffect | PlusAction Int | PlusBuy Int | PlusPower Int | PlusCoins Int
