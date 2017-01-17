@@ -9,28 +9,17 @@ import Html.Events exposing ( onClick )
 
 import Model exposing (..)
 
-cityBlockIdBelongsToCity : Game -> City -> String -> Bool
-cityBlockIdBelongsToCity game city cityBlockId =
-  case find (\id -> id == cityBlockId) city.cityBlockIds of
-    Just _ -> True
-    Nothing -> False
-
-cityBlockIdBelongsToPlayer : Game -> Player -> String -> Bool
-cityBlockIdBelongsToPlayer game player cityBlockId =
-  let
-    city = Dict.get player.cityId game.cities
-  in
-    case city of
-      Just city -> cityBlockIdBelongsToCity game city cityBlockId
-      Nothing -> False
-
 cityBlockIdBelongsToCurrentPlayer : Game -> String -> Bool
 cityBlockIdBelongsToCurrentPlayer game cityBlockId =
   let
-    player = Array.get (game.turnCounter % 2) game.players
+    foundCityBlock = Array.get (game.turnCounter % 2) game.players -- Player
+      |> Maybe.andThen (\a -> Just a.cityId)                       -- Player.cityId
+      |> Maybe.andThen (\key -> Dict.get key game.cities)          -- City
+      |> Maybe.andThen (\a -> Just a.cityBlockIds)                 -- City.cityBlockIds
+      |> Maybe.andThen (find (\id -> id == cityBlockId))           -- String
   in
-    case player of
-      Just player -> cityBlockIdBelongsToPlayer game player cityBlockId
+    case foundCityBlock of
+      Just _ -> True
       Nothing -> False
 
 cityBlockDisplay : Game -> (String, CityBlock) -> Html Msg
