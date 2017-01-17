@@ -33,8 +33,8 @@ initialGame =
       , ("c1", { name = "Toronto" })
       ]
   , cityBlocks = Dict.fromList
-      [ ("cb0", { cityBlockTypeId = "cbt0" })
-      , ("cb1", { cityBlockTypeId = "cbt1" })
+      [ ("cb0", { cityBlockTypeId = "cbt0", activated = False })
+      , ("cb1", { cityBlockTypeId = "cbt1", activated = False })
       ]
   , cityBlockTypes = Dict.fromList
       [ ("cbt0",
@@ -120,8 +120,6 @@ subscriptions model =
 
 
 -- UPDATE
-type Msg = NoOp | CreateGame | NextTurn | ReadGame PortableGame
-
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
@@ -135,7 +133,11 @@ update msg model =
     NextTurn ->
       let
         prevGame = model.game
-        nextGame = { prevGame | turnCounter = prevGame.turnCounter + 1 }
+        nextGame =
+          { prevGame |
+            turnCounter = prevGame.turnCounter + 1
+          , cityBlocks = Dict.toList prevGame.cityBlocks |> deactivateAllCityBlocks |> Dict.fromList
+          }
       in
         ( { model | game = nextGame }
         , writePort (gameToPortable nextGame)
@@ -144,8 +146,25 @@ update msg model =
       let
         nextGame = gameFromPortable portGame
       in
-        ( { model | game = nextGame }, Cmd.none )
+        ({ model | game = nextGame }, Cmd.none)
+    ActivateCityBlock cityBlockId ->
+      let
+        prevGame = model.game
+        nextGame = { prevGame | cityBlocks = Dict.update cityBlockId activateCityBlock prevGame.cityBlocks }
+      in
+        ({ model | game = nextGame }, writePort (gameToPortable nextGame))
 
+activateCityBlock : Maybe CityBlock -> Maybe CityBlock
+activateCityBlock maybeCityBlock =
+  case maybeCityBlock of
+    Just cityBlock -> Just { cityBlock | activated = True }
+    Nothing -> maybeCityBlock
+
+deactivateAllCityBlocks : List (String, CityBlock) -> List (String, CityBlock)
+deactivateAllCityBlocks cityBlocks =
+  List.map (\(id, cityBlock) ->
+    (id, { cityBlock | activated = False })
+  ) cityBlocks
 
 -- VIEW
 view : Model -> Html Msg

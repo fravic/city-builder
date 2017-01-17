@@ -31,7 +31,8 @@ type alias City = {
 }
 
 type alias CityBlock = {
-  cityBlockTypeId: String
+  cityBlockTypeId: String,
+  activated: Bool
 }
 
 type alias CityBlockType = {
@@ -47,3 +48,5 @@ type alias PortableCityBlockType = {
 }
 
 type CityBlockEffect = NoEffect | PlusAction Int | PlusBuy Int | PlusPower Int | PlusCoins Int
+
+type Msg = NoOp | CreateGame | NextTurn | ReadGame PortableGame | ActivateCityBlock String
