@@ -1,5 +1,6 @@
 module Model exposing (..)
 
+import Array exposing (Array)
 import Dict exposing (Dict)
 
 type alias Model = {
@@ -10,7 +11,7 @@ type alias Game = {
   cities: Dict String City,
   cityBlocks: Dict String CityBlock,
   cityBlockTypes: Dict String CityBlockType,
-  players: Dict String Player,
+  players: Array Player,
   turnCounter: Int
 }
 
@@ -18,7 +19,7 @@ type alias PortableGame = {
   cities: List (String, City),
   cityBlocks: List (String, CityBlock),
   cityBlockTypes: List (String, PortableCityBlockType),
-  players: List (String, Player),
+  players: Array Player,
   turnCounter: Int
 }
 
@@ -27,7 +28,8 @@ type alias Player = {
 }
 
 type alias City = {
-  name: String
+  name: String,
+  cityBlockIds: List String
 }
 
 type alias CityBlock = {

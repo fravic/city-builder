@@ -1,5 +1,6 @@
 port module Main exposing (..)
 
+import Array exposing (Array)
 import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -24,13 +25,13 @@ main =
 initialGame : Game
 initialGame =
   {
-    players = Dict.fromList
-      [ ("p0", { cityId = "c0" })
-      , ("p1", { cityId = "c1" })
+    players = Array.fromList
+      [ { cityId = "c0" }
+      , { cityId = "c1" }
       ]
   , cities = Dict.fromList
-      [ ("c0", { name = "San Francisco" })
-      , ("c1", { name = "Toronto" })
+      [ ("c0", { name = "San Francisco", cityBlockIds = [ "cb0" ] })
+      , ("c1", { name = "Toronto", cityBlockIds = [ "cb1" ] })
       ]
   , cityBlocks = Dict.fromList
       [ ("cb0", { cityBlockTypeId = "cbt0", activated = False })
@@ -71,8 +72,7 @@ port readPort : (PortableGame -> msg) -> Sub msg
 gameToPortable : Game -> PortableGame
 gameToPortable game =
   { game |
-      players = Dict.toList game.players
-    , cities = Dict.toList game.cities
+      cities = Dict.toList game.cities
     , cityBlocks = Dict.toList game.cityBlocks
     , cityBlockTypes = Dict.toList (Dict.map cityBlockTypeToPortable game.cityBlockTypes)
   }
@@ -84,8 +84,7 @@ cityBlockTypeToPortable key cityBlockType =
 gameFromPortable : PortableGame -> Game
 gameFromPortable portGame =
   { portGame |
-      players = Dict.fromList portGame.players
-    , cities = Dict.fromList portGame.cities
+      cities = Dict.fromList portGame.cities
     , cityBlocks = Dict.fromList portGame.cityBlocks
     , cityBlockTypes = Dict.map cityBlockTypeFromPortable (Dict.fromList portGame.cityBlockTypes)
   }
