@@ -6,6 +6,7 @@ import List.Extra exposing (find)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing ( onClick )
+import Maybe.Extra exposing (..)
 
 import Model exposing (..)
 
@@ -39,20 +40,44 @@ cityBlockDisplay game (cityBlockId, cityBlock) =
         div [style styles, onClick onClickAction] [text cityBlockType.name]
       Nothing -> div [] []
 
-cityDisplay : City -> Html a
-cityDisplay city =
-  div [] [text city.name]
+actionsFromCityBlockEffect : CityBlockEffect -> Int -> Int
+actionsFromCityBlockEffect effect soFar =
+  case effect of
+    PlusAction value -> soFar + value
+    _ -> soFar
+
+actionsAvailable : City -> Game -> Int
+actionsAvailable city game =
+  let
+    getCityBlock = \cityBlockId -> Dict.get cityBlockId game.cityBlocks
+    getCityBlockType = \cityBlockTypeId -> (Dict.get cityBlockTypeId game.cityBlockTypes)
+
+    activatedCityBlockEffects = List.map getCityBlock city.cityBlockIds
+      |> List.filter (Maybe.map .activated >> Maybe.withDefault False) -- activated CityBlocks
+      |> List.map (Maybe.map .cityBlockTypeId)
+      |> List.map (Maybe.map getCityBlockType)
+      |> List.concatMap (Maybe.Extra.join >> Maybe.map .effects >> Maybe.withDefault [])
+  in
+    List.foldr actionsFromCityBlockEffect 0 activatedCityBlockEffects
+
+cityDisplay : Game -> City -> Html a
+cityDisplay game city =
+  div [] [
+    (text city.name),
+    (text "Actions:"),
+    (text (actionsAvailable city game |> toString))
+  ]
 
 gameDisplay : Game -> Html Msg
 gameDisplay game =
-  h1
-    [class "h1"]
+  div
+    [class "game"]
     [
       text "Current Game Turn: ",
       span [] [text (toString game.turnCounter)]
     , ul
         []
-        (List.map cityDisplay (Dict.values game.cities))
+        (List.map (\city -> cityDisplay game city) (Dict.values game.cities))
     , ul
         []
         (List.map (\cityBlock -> cityBlockDisplay game cityBlock) (Dict.toList game.cityBlocks))
