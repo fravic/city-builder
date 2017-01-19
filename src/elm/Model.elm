@@ -24,26 +24,31 @@ type alias PortableGame = {
 }
 
 type alias Player = {
+  id: String,
   cityId: String
 }
 
 type alias City = {
+  id: String,
   name: String,
   cityBlockIds: List String
 }
 
 type alias CityBlock = {
+  id: String,
   cityBlockTypeId: String,
   activated: Bool
 }
 
 type alias CityBlockType = {
+  id: String,
   name: String,
   cost: Int,
   effects: List CityBlockEffect
 }
 
 type alias PortableCityBlockType = {
+  id: String,
   name: String,
   cost: Int,
   effects: List (String, Int)

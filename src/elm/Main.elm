@@ -26,20 +26,22 @@ initialGame : Game
 initialGame =
   {
     players = Array.fromList
-      [ { cityId = "c0" }
-      , { cityId = "c1" }
+      [ { id = "p0", cityId = "c0" }
+      , { id = "p1", cityId = "c1" }
       ]
   , cities = Dict.fromList
-      [ ("c0", { name = "San Francisco", cityBlockIds = [ "cb0" ] })
-      , ("c1", { name = "Toronto", cityBlockIds = [ "cb1" ] })
+      [ ("c0", { id = "c0", name = "San Francisco", cityBlockIds = [ "cb0", "cb2" ] })
+      , ("c1", { id = "c1", name = "Toronto", cityBlockIds = [ "cb1" ] })
       ]
   , cityBlocks = Dict.fromList
-      [ ("cb0", { cityBlockTypeId = "cbt0", activated = False })
-      , ("cb1", { cityBlockTypeId = "cbt1", activated = False })
+      [ ("cb0", { id = "cb0", cityBlockTypeId = "cbt0", activated = False })
+      , ("cb1", { id = "cb1", cityBlockTypeId = "cbt1", activated = False })
+      , ("cb2", { id = "cb2", cityBlockTypeId = "cbt1", activated = False })
       ]
   , cityBlockTypes = Dict.fromList
       [ ("cbt0",
-          { name = "Restaurant"
+          { id = "cbt0"
+          , name = "Restaurant"
           , cost = 3
           , effects = [
               PlusPower 1
@@ -47,7 +49,8 @@ initialGame =
             ]
           })
       , ("cbt1",
-          { name = "Bank"
+          { id = "cbt1"
+          , name = "Bank"
           , cost = 3
           , effects = [
               PlusBuy 1

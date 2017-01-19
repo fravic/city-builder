@@ -6,66 +6,121 @@ import List.Extra exposing (find)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing ( onClick )
-import Maybe.Extra exposing (..)
 
 import Model exposing (..)
 
-cityBlockIdBelongsToCurrentPlayer : Game -> String -> Bool
-cityBlockIdBelongsToCurrentPlayer game cityBlockId =
+getCityBlock : Game -> String -> Maybe CityBlock
+getCityBlock game cityBlockId = Dict.get cityBlockId game.cityBlocks
+
+cityBlockBelongsToCurrentPlayer : Game -> CityBlock -> Bool
+cityBlockBelongsToCurrentPlayer game cityBlock =
   let
     foundCityBlock = Array.get (game.turnCounter % 2) game.players -- Player
       |> Maybe.andThen (\a -> Just a.cityId)                       -- Player.cityId
       |> Maybe.andThen (\key -> Dict.get key game.cities)          -- City
       |> Maybe.andThen (\a -> Just a.cityBlockIds)                 -- City.cityBlockIds
-      |> Maybe.andThen (find (\id -> id == cityBlockId))           -- String
+      |> Maybe.andThen (find (\id -> id == cityBlock.id))          -- String
   in
     case foundCityBlock of
       Just _ -> True
       Nothing -> False
 
-cityBlockDisplay : Game -> (String, CityBlock) -> Html Msg
-cityBlockDisplay game (cityBlockId, cityBlock) =
+cityBlockDisplay : Game -> City -> CityBlock -> Html Msg
+cityBlockDisplay game city cityBlock =
   let
     cityBlockTypes = game.cityBlockTypes
     cityBlockType = Dict.get cityBlock.cityBlockTypeId cityBlockTypes
-    currentPlayer = cityBlockIdBelongsToCurrentPlayer game cityBlockId
+    currentPlayer = cityBlockBelongsToCurrentPlayer game cityBlock
+    actionsRemaining = (actionsRemainingForCity game city)
     styles =
       if cityBlock.activated then [("color", "green")] else
-        if currentPlayer then [("color", "black")] else [("color", "gray")]
+        if currentPlayer && actionsRemaining > 0 then [("color", "black")] else [("color", "gray")]
     onClickAction =
-      if currentPlayer && not cityBlock.activated then (ActivateCityBlock cityBlockId) else NoOp
+      if currentPlayer && not cityBlock.activated && actionsRemaining > 0
+        then (ActivateCityBlock cityBlock.id)
+        else NoOp
   in
     case cityBlockType of
       Just cityBlockType ->
         div [style styles, onClick onClickAction] [text cityBlockType.name]
       Nothing -> div [] []
 
-actionsFromCityBlockEffect : CityBlockEffect -> Int -> Int
-actionsFromCityBlockEffect effect soFar =
+plusActionsEffect : CityBlockEffect -> Int -> Int
+plusActionsEffect effect soFar =
   case effect of
     PlusAction value -> soFar + value
     _ -> soFar
 
-actionsAvailable : City -> Game -> Int
-actionsAvailable city game =
+plusBuysEffect : CityBlockEffect -> Int -> Int
+plusBuysEffect effect soFar =
+  case effect of
+    PlusBuy value -> soFar + value
+    _ -> soFar
+
+plusCoinsEffect : CityBlockEffect -> Int -> Int
+plusCoinsEffect effect soFar =
+  case effect of
+    PlusCoins value -> soFar + value
+    _ -> soFar
+
+activatedCityBlocks : Game -> City -> (List CityBlock)
+activatedCityBlocks game city =
+  List.filterMap (getCityBlock game) city.cityBlockIds
+    |> List.filter .activated
+
+sumCityBlockEffects : (CityBlockEffect -> Int -> Int) -> Game -> City -> Int
+sumCityBlockEffects sumFunc game city =
   let
-    getCityBlock = \cityBlockId -> Dict.get cityBlockId game.cityBlocks
     getCityBlockType = \cityBlockTypeId -> (Dict.get cityBlockTypeId game.cityBlockTypes)
-
-    activatedCityBlockEffects = List.map getCityBlock city.cityBlockIds
-      |> List.filter (Maybe.map .activated >> Maybe.withDefault False) -- activated CityBlocks
-      |> List.map (Maybe.map .cityBlockTypeId)
-      |> List.map (Maybe.map getCityBlockType)
-      |> List.concatMap (Maybe.Extra.join >> Maybe.map .effects >> Maybe.withDefault [])
+    activatedCityBlockEffects = (activatedCityBlocks game city)
+      |> List.filterMap (.cityBlockTypeId >> getCityBlockType)
+      |> List.concatMap .effects
   in
-    List.foldr actionsFromCityBlockEffect 0 activatedCityBlockEffects
+    List.foldr sumFunc 0 activatedCityBlockEffects
 
-cityDisplay : Game -> City -> Html a
+actionsRemainingForCity : Game -> City -> Int
+actionsRemainingForCity game city =
+  let
+    defaultActionCount = 1
+    plusActions = (sumCityBlockEffects plusActionsEffect) game city
+    activatedCityBlocksCount = List.length (activatedCityBlocks game city)
+  in
+    (plusActions + defaultActionCount) - activatedCityBlocksCount
+
+buysRemainingForCity : Game -> City -> Int
+buysRemainingForCity game city =
+  let
+    defaultBuyCount = 1
+    plusBuys = (sumCityBlockEffects plusBuysEffect) game city
+  in
+    (plusBuys + defaultBuyCount) -- TODO: Factor in how many buys the player has performed this turn
+
+cityDisplay : Game -> City -> Html Msg
 cityDisplay game city =
-  div [] [
+  div [style [("margin-bottom", "25px")]] [
     (text city.name),
-    (text "Actions:"),
-    (text (actionsAvailable city game |> toString))
+    (div [] [
+      (text "Actions:")
+    , (text (actionsRemainingForCity game city |> toString))
+    ])
+  , (div [] [
+      (text "Buys:")
+    , (text (buysRemainingForCity game city |> toString))
+    ])
+  , (div [] [
+      (text "Coins:")
+    , (text ((sumCityBlockEffects plusCoinsEffect) game city |> toString))
+    ])
+  , (div [] [
+      (text "City Blocks")
+    , (ul
+        []
+        (List.map
+          (cityBlockDisplay game city)
+          (List.filterMap (getCityBlock game) city.cityBlockIds)
+        )
+      )
+    ])
   ]
 
 gameDisplay : Game -> Html Msg
@@ -78,7 +133,4 @@ gameDisplay game =
     , ul
         []
         (List.map (\city -> cityDisplay game city) (Dict.values game.cities))
-    , ul
-        []
-        (List.map (\cityBlock -> cityBlockDisplay game cityBlock) (Dict.toList game.cityBlocks))
     ]
