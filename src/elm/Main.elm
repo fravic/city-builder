@@ -5,15 +5,16 @@ import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing ( onClick )
+import Random exposing (..)
 
 import Model exposing (..)
 import Components.Game exposing ( gameDisplay )
 
 
 -- APP
-main : Program Never Model Msg
+main : Program Flags Model Msg
 main =
-  Html.program
+  Html.programWithFlags
     { init = init,
       view = view,
       update = update,
@@ -34,9 +35,9 @@ initialGame =
       , ("c1", { id = "c1", name = "Toronto", cityBlockIds = [ "cb1" ] })
       ]
   , cityBlocks = Dict.fromList
-      [ ("cb0", { id = "cb0", cityBlockTypeId = "cbt0", activated = False })
-      , ("cb1", { id = "cb1", cityBlockTypeId = "cbt1", activated = False })
-      , ("cb2", { id = "cb2", cityBlockTypeId = "cbt1", activated = False })
+      [ ("cb0", { id = "cb0", cityBlockTypeId = "cbt0", activated = False, powered = False })
+      , ("cb1", { id = "cb1", cityBlockTypeId = "cbt1", activated = False, powered = False })
+      , ("cb2", { id = "cb2", cityBlockTypeId = "cbt1", activated = False, powered = False })
       ]
   , cityBlockTypes = Dict.fromList
       [ ("cbt0",
@@ -61,9 +62,11 @@ initialGame =
   , turnCounter = 0
   }
 
-init : (Model, Cmd Msg)
-init =
-  ( Model initialGame,
+type alias Flags = { startTime: Int }
+
+init : Flags -> (Model, Cmd Msg)
+init flags =
+  ( Model initialGame (Random.initialSeed flags.startTime),
     Cmd.none
   )
 
@@ -135,13 +138,16 @@ update msg model =
     NextTurn ->
       let
         prevGame = model.game
+        (nextCityBlocks, nextRandSeed) = Dict.toList prevGame.cityBlocks
+            |> deactivateAllCityBlocks
+            |> powerUpRandomCityBlocks prevGame model.randomSeed
         nextGame =
           { prevGame |
             turnCounter = prevGame.turnCounter + 1
-          , cityBlocks = Dict.toList prevGame.cityBlocks |> deactivateAllCityBlocks |> Dict.fromList
+          , cityBlocks = nextCityBlocks |> Dict.fromList
           }
       in
-        ( { model | game = nextGame }
+        ( { model | game = nextGame, randomSeed = nextRandSeed }
         , writePort (gameToPortable nextGame)
         )
     ReadGame portGame ->
@@ -165,8 +171,26 @@ activateCityBlock maybeCityBlock =
 deactivateAllCityBlocks : List (String, CityBlock) -> List (String, CityBlock)
 deactivateAllCityBlocks cityBlocks =
   List.map (\(id, cityBlock) ->
-    (id, { cityBlock | activated = False })
+    (id, { cityBlock | activated = False, powered = False })
   ) cityBlocks
+
+-- TODO: Only power up city blocks of current player
+powerUpRandomCityBlocks : Game -> Seed -> List (String, CityBlock) -> (List (String, CityBlock), Seed)
+powerUpRandomCityBlocks game randSeed cityBlocks =
+  let
+    len = (List.length cityBlocks)
+    rand = Random.step (Random.list len (Random.int 0 Random.maxInt)) randSeed
+    randCityBlocks = List.map2 (,) (Tuple.first rand) cityBlocks -- Zip city blocks with rand ints
+      |> List.sortBy Tuple.first                                 -- Sort by rand ints
+      |> List.unzip
+      |> Tuple.second
+    powerUp = \idx (id, cityBlock) ->
+      if idx < 1
+        then (id, { cityBlock | powered = True })
+        else (id, cityBlock)
+  in
+    ((List.indexedMap powerUp randCityBlocks), (Tuple.second rand))
+
 
 -- VIEW
 view : Model -> Html Msg

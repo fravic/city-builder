@@ -2,9 +2,11 @@ module Model exposing (..)
 
 import Array exposing (Array)
 import Dict exposing (Dict)
+import Random exposing (Seed)
 
 type alias Model = {
-  game: Game
+  game: Game,
+  randomSeed: Seed
 }
 
 type alias Game = {
@@ -37,7 +39,8 @@ type alias City = {
 type alias CityBlock = {
   id: String,
   cityBlockTypeId: String,
-  activated: Bool
+  activated: Bool,
+  powered: Bool
 }
 
 type alias CityBlockType = {

@@ -34,7 +34,7 @@ cityBlockDisplay game city cityBlock =
     actionsRemaining = (actionsRemainingForCity game city)
     styles =
       if cityBlock.activated then [("color", "green")] else
-        if currentPlayer && actionsRemaining > 0 then [("color", "black")] else [("color", "gray")]
+        if currentPlayer && actionsRemaining > 0 && cityBlock.powered then [("color", "black")] else [("color", "gray")]
     onClickAction =
       if currentPlayer && not cityBlock.activated && actionsRemaining > 0
         then (ActivateCityBlock cityBlock.id)

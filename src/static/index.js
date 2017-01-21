@@ -2,7 +2,7 @@ var firebase = require("firebase");
 
 var Elm = require('../elm/Main');
 
-var app = Elm.Main.embed(document.getElementById('main'));
+var app = Elm.Main.embed(document.getElementById('main'), { startTime: Date.now() });
 
 const TEST_GAME_ID = 'testGame01';
 
