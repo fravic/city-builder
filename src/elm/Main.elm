@@ -4,12 +4,16 @@ import Array exposing (Array)
 import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing ( onClick )
-import Random exposing (..)
+import Html.Events exposing (onClick)
+import Platform exposing (..)
+import Random exposing (initialSeed)
 
 import Model exposing (..)
-import Components.Game exposing ( gameDisplay )
+import Ports exposing (gameFromPortable, gameToPortable, readPort, writePort)
 
+import Update.NextTurn exposing (nextTurn)
+
+import Components.Game exposing (gameDisplay)
 
 -- APP
 main : Program Flags Model Msg
@@ -71,53 +75,6 @@ init flags =
   )
 
 
--- PORTS
-port writePort : PortableGame -> Cmd msg
-port readPort : (PortableGame -> msg) -> Sub msg
-
-gameToPortable : Game -> PortableGame
-gameToPortable game =
-  { game |
-      cities = Dict.toList game.cities
-    , cityBlocks = Dict.toList game.cityBlocks
-    , cityBlockTypes = Dict.toList (Dict.map cityBlockTypeToPortable game.cityBlockTypes)
-  }
-
-cityBlockTypeToPortable : String -> CityBlockType -> PortableCityBlockType
-cityBlockTypeToPortable key cityBlockType =
-  { cityBlockType | effects = (List.map cityBlockEffectToValue cityBlockType.effects) }
-
-gameFromPortable : PortableGame -> Game
-gameFromPortable portGame =
-  { portGame |
-      cities = Dict.fromList portGame.cities
-    , cityBlocks = Dict.fromList portGame.cityBlocks
-    , cityBlockTypes = Dict.map cityBlockTypeFromPortable (Dict.fromList portGame.cityBlockTypes)
-  }
-
-cityBlockTypeFromPortable : String -> PortableCityBlockType -> CityBlockType
-cityBlockTypeFromPortable key portCityBlockType =
-  { portCityBlockType | effects = (List.map cityBlockEffectFromValue portCityBlockType.effects)}
-
-cityBlockEffectFromValue : (String, Int) -> CityBlockEffect
-cityBlockEffectFromValue (effect, value) =
-  case effect of
-    "PlusAction" -> PlusAction value
-    "PlusBuy" -> PlusBuy value
-    "PlusPower" -> PlusPower value
-    "PlusCoins" -> PlusCoins value
-    _ -> NoEffect
-
-cityBlockEffectToValue : CityBlockEffect -> (String, Int)
-cityBlockEffectToValue effect =
-  case effect of
-    PlusAction value -> ("PlusAction", value)
-    PlusBuy value -> ("PlusBuy", value)
-    PlusPower value -> ("PlusPower", value)
-    PlusCoins value -> ("PlusCoins", value)
-    NoEffect -> ("NoEffect", 0)
-
-
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
 subscriptions model =
@@ -136,20 +93,7 @@ update msg model =
          , writePort (gameToPortable nextGame)
          )
     NextTurn ->
-      let
-        prevGame = model.game
-        (nextCityBlocks, nextRandSeed) = Dict.toList prevGame.cityBlocks
-            |> deactivateAllCityBlocks
-            |> powerUpRandomCityBlocks prevGame model.randomSeed
-        nextGame =
-          { prevGame |
-            turnCounter = prevGame.turnCounter + 1
-          , cityBlocks = nextCityBlocks |> Dict.fromList
-          }
-      in
-        ( { model | game = nextGame, randomSeed = nextRandSeed }
-        , writePort (gameToPortable nextGame)
-        )
+      nextTurn model
     ReadGame portGame ->
       let
         nextGame = gameFromPortable portGame
@@ -167,29 +111,6 @@ activateCityBlock maybeCityBlock =
   case maybeCityBlock of
     Just cityBlock -> Just { cityBlock | activated = True }
     Nothing -> maybeCityBlock
-
-deactivateAllCityBlocks : List (String, CityBlock) -> List (String, CityBlock)
-deactivateAllCityBlocks cityBlocks =
-  List.map (\(id, cityBlock) ->
-    (id, { cityBlock | activated = False, powered = False })
-  ) cityBlocks
-
--- TODO: Only power up city blocks of current player
-powerUpRandomCityBlocks : Game -> Seed -> List (String, CityBlock) -> (List (String, CityBlock), Seed)
-powerUpRandomCityBlocks game randSeed cityBlocks =
-  let
-    len = (List.length cityBlocks)
-    rand = Random.step (Random.list len (Random.int 0 Random.maxInt)) randSeed
-    randCityBlocks = List.map2 (,) (Tuple.first rand) cityBlocks -- Zip city blocks with rand ints
-      |> List.sortBy Tuple.first                                 -- Sort by rand ints
-      |> List.unzip
-      |> Tuple.second
-    powerUp = \idx (id, cityBlock) ->
-      if idx < 1
-        then (id, { cityBlock | powered = True })
-        else (id, cityBlock)
-  in
-    ((List.indexedMap powerUp randCityBlocks), (Tuple.second rand))
 
 
 -- VIEW

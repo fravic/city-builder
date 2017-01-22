@@ -1,13 +1,14 @@
 module Components.Game exposing (gameDisplay)
 
-import Array exposing (Array)
 import Dict exposing (Dict)
 import List.Extra exposing (find)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing ( onClick )
 
+import Config exposing (defaultActionCount, defaultBuyCount)
 import Model exposing (..)
+import Helpers exposing (getCurrentCity)
 
 getCityBlock : Game -> String -> Maybe CityBlock
 getCityBlock game cityBlockId = Dict.get cityBlockId game.cityBlocks
@@ -15,9 +16,7 @@ getCityBlock game cityBlockId = Dict.get cityBlockId game.cityBlocks
 cityBlockBelongsToCurrentPlayer : Game -> CityBlock -> Bool
 cityBlockBelongsToCurrentPlayer game cityBlock =
   let
-    foundCityBlock = Array.get (game.turnCounter % 2) game.players -- Player
-      |> Maybe.andThen (\a -> Just a.cityId)                       -- Player.cityId
-      |> Maybe.andThen (\key -> Dict.get key game.cities)          -- City
+    foundCityBlock = getCurrentCity game
       |> Maybe.andThen (\a -> Just a.cityBlockIds)                 -- City.cityBlockIds
       |> Maybe.andThen (find (\id -> id == cityBlock.id))          -- String
   in
@@ -81,7 +80,6 @@ sumCityBlockEffects sumFunc game city =
 actionsRemainingForCity : Game -> City -> Int
 actionsRemainingForCity game city =
   let
-    defaultActionCount = 1
     plusActions = (sumCityBlockEffects plusActionsEffect) game city
     activatedCityBlocksCount = List.length (activatedCityBlocks game city)
   in
@@ -90,7 +88,6 @@ actionsRemainingForCity game city =
 buysRemainingForCity : Game -> City -> Int
 buysRemainingForCity game city =
   let
-    defaultBuyCount = 1
     plusBuys = (sumCityBlockEffects plusBuysEffect) game city
   in
     (plusBuys + defaultBuyCount) -- TODO: Factor in how many buys the player has performed this turn
