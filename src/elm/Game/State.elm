@@ -11,7 +11,7 @@ import Game.Selectors exposing (currentCity, currentCityBlocks)
 import Game.Types exposing (..)
 import Utils exposing (shuffleList)
 
--- TODO: Move this out
+-- INITIAL
 initial : Game
 initial =
   {
@@ -51,6 +51,7 @@ initial =
   , turnCounter = 0
   }
 
+-- UPDATE
 deactivateAllCityBlocks : Game -> Game
 deactivateAllCityBlocks game =
   let

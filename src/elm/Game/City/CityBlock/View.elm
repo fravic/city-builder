@@ -7,9 +7,8 @@ import Html.Events exposing ( onClick )
 
 import Game.Types as GameTypes exposing (Game, CityBlock)
 import Game.City.CityBlock.Types exposing (..)
-import Types
 
-view : Game -> Bool -> CityBlock -> Html Types.Msg
+view : Game -> Bool -> CityBlock -> Html Msg
 view game activatable cityBlock =
   let
     cityBlockTypes = game.cityBlockTypes
@@ -19,8 +18,8 @@ view game activatable cityBlock =
         if activatable && cityBlock.powered then [("color", "black")] else [("color", "gray")]
     onClickAction =
       if activatable && not cityBlock.activated
-        then Types.MsgForGame <| GameTypes.MsgForCityBlock cityBlock.id Activate
-        else Types.MsgForGame <| GameTypes.MsgForCityBlock cityBlock.id NoOp
+        then Activate
+        else NoOp
   in
     case cityBlockType of
       Just cityBlockType ->

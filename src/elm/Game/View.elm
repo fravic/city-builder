@@ -7,9 +7,8 @@ import Html.Events exposing (onClick)
 
 import Game.Types exposing (..)
 import Game.City.View as CityView
-import Types
 
-view : Game -> Html Types.Msg
+view : Game -> Html Msg
 view game =
   div [ class "container" ][
     div [ class "row" ][
@@ -18,7 +17,7 @@ view game =
     , ul
         []
         (List.map (\city -> CityView.view game city) (Dict.values game.cities))
-    , button [ class "btn", onClick (Types.MsgForGame <| CreateGame) ] [ text "New Game" ]
-    , button [ class "btn", onClick (Types.MsgForGame <| NextTurn) ] [ text "Next Turn" ]
+    , button [ class "btn", onClick CreateGame ] [ text "New Game" ]
+    , button [ class "btn", onClick NextTurn ] [ text "Next Turn" ]
     ]
   ]

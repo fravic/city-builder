@@ -48,4 +48,4 @@ update msg model =
 
 -- VIEW
 view : Model -> Html.Html Msg
-view model = Game.View.view model.game
+view model = Html.map Types.MsgForGame (Game.View.view model.game)

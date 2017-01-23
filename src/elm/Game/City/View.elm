@@ -14,9 +14,8 @@ import Game.Selectors exposing (
   )
 import Game.Types exposing (..)
 import Game.City.Types exposing (..)
-import Types
 
-view : Game -> City -> Html Types.Msg
+view : Game -> City -> Html Msg
 view game city =
   let
     currentPlayer = (currentCity game) == Just city
@@ -43,7 +42,11 @@ view game city =
         (text "City Blocks")
       , (ul
           []
-          (List.map (CityBlockView.view game activatable) cityBlocks)
+          (List.map (\cityBlock ->
+            Html.map (MsgForCityBlock cityBlock.id) (
+              CityBlockView.view game activatable cityBlock
+            )
+          ) cityBlocks)
         )
       ])
     ]
