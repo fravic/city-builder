@@ -2,7 +2,7 @@ port module Ports exposing (gameFromPortable, gameToPortable, readPort, writePor
 
 import Dict exposing (..)
 
-import Model exposing (..)
+import Game.Types exposing (Game, PortableGame, CityBlockType, PortableCityBlockType, CityBlockEffect)
 
 port writePort : PortableGame -> Cmd msg
 port readPort : (PortableGame -> msg) -> Sub msg
@@ -34,17 +34,17 @@ cityBlockTypeFromPortable key portCityBlockType =
 cityBlockEffectFromValue : (String, Int) -> CityBlockEffect
 cityBlockEffectFromValue (effect, value) =
   case effect of
-    "PlusAction" -> PlusAction value
-    "PlusBuy" -> PlusBuy value
-    "PlusPower" -> PlusPower value
-    "PlusCoins" -> PlusCoins value
-    _ -> NoEffect
+    "PlusAction" -> Game.Types.PlusAction value
+    "PlusBuy" -> Game.Types.PlusBuy value
+    "PlusPower" -> Game.Types.PlusPower value
+    "PlusCoins" -> Game.Types.PlusCoins value
+    _ -> Game.Types.NoEffect
 
 cityBlockEffectToValue : CityBlockEffect -> (String, Int)
 cityBlockEffectToValue effect =
   case effect of
-    PlusAction value -> ("PlusAction", value)
-    PlusBuy value -> ("PlusBuy", value)
-    PlusPower value -> ("PlusPower", value)
-    PlusCoins value -> ("PlusCoins", value)
-    NoEffect -> ("NoEffect", 0)
+    Game.Types.PlusAction value -> ("PlusAction", value)
+    Game.Types.PlusBuy value -> ("PlusBuy", value)
+    Game.Types.PlusPower value -> ("PlusPower", value)
+    Game.Types.PlusCoins value -> ("PlusCoins", value)
+    Game.Types.NoEffect -> ("NoEffect", 0)

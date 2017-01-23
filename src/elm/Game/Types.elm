@@ -1,13 +1,10 @@
-module Model exposing (..)
+module Game.Types exposing (..)
 
 import Array exposing (Array)
 import Dict exposing (Dict)
-import Random exposing (Seed)
 
-type alias Model = {
-  game: Game,
-  randomSeed: Seed
-}
+import Game.City.Types exposing (City)
+import Game.City.CityBlock.Types as CityBlockTypes
 
 type alias Game = {
   cities: Dict String City,
@@ -30,18 +27,14 @@ type alias Player = {
   cityId: String
 }
 
-type alias City = {
-  id: String,
-  name: String,
-  cityBlockIds: List String
-}
-
 type alias CityBlock = {
   id: String,
   cityBlockTypeId: String,
   activated: Bool,
   powered: Bool
 }
+
+type CityBlockEffect = NoEffect | PlusAction Int | PlusBuy Int | PlusPower Int | PlusCoins Int
 
 type alias CityBlockType = {
   id: String,
@@ -57,6 +50,4 @@ type alias PortableCityBlockType = {
   effects: List (String, Int)
 }
 
-type CityBlockEffect = NoEffect | PlusAction Int | PlusBuy Int | PlusPower Int | PlusCoins Int
-
-type Msg = NoOp | CreateGame | NextTurn | ReadGame PortableGame | ActivateCityBlock String
+type Msg = NoOp | CreateGame | NextTurn | ReadGame PortableGame | MsgForCityBlock String CityBlockTypes.Msg
