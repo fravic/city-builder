@@ -8,7 +8,9 @@ import Config exposing (defaultPowerCount)
 import Ports exposing (gameFromPortable, gameToPortable, readPort, writePort)
 import Game.City.CityBlock.State as CityBlockState
 import Game.Selectors exposing (currentCity, currentCityBlocks)
-import Game.Types exposing (..)
+import Game.Model exposing (..)
+import Game.Msg exposing (..)
+import Game.Shop.State as ShopState
 import Utils exposing (shuffleList)
 
 -- INITIAL
@@ -48,6 +50,10 @@ initial =
             ]
           })
       ]
+  , purchasables = [
+      { remaining = 10, cityBlockTypeId = "cbt0" }
+    , { remaining = 10, cityBlockTypeId = "cbt1" }
+    ]
   , turnCounter = 0
   }
 
@@ -114,6 +120,8 @@ update msg seed game =
           |> Maybe.withDefault game
       in
         (nextGame, seed)
+    MsgForShop msg ->
+      (ShopState.update msg game, seed)
 
 -- SUBSCRIPTIONS
 subscriptions : Game -> Sub Msg

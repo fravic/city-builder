@@ -12,10 +12,11 @@ import Game.Selectors exposing (
   coinsRemainingForCity,
   currentCity
   )
-import Game.Types exposing (..)
-import Game.City.Types exposing (..)
+import Game.Model exposing (..)
+import Game.Msg as Game
+import Game.City.Model exposing (..)
 
-view : Game -> City -> Html Msg
+view : Game -> City -> Html Game.Msg
 view game city =
   let
     currentPlayer = (currentCity game) == Just city
@@ -43,7 +44,7 @@ view game city =
       , (ul
           []
           (List.map (\cityBlock ->
-            Html.map (MsgForCityBlock cityBlock.id) (
+            Html.map (Game.MsgForCityBlock cityBlock.id) (
               CityBlockView.view game activatable cityBlock
             )
           ) cityBlocks)

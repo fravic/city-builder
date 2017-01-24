@@ -2,12 +2,12 @@ port module Ports exposing (gameFromPortable, gameToPortable, readPort, writePor
 
 import Dict exposing (..)
 
-import Game.Types exposing (Game, PortableGame, CityBlockType, PortableCityBlockType, CityBlockEffect)
+import Game.Model as Game
 
-port writePort : PortableGame -> Cmd msg
-port readPort : (PortableGame -> msg) -> Sub msg
+port writePort : Game.PortableGame -> Cmd msg
+port readPort : (Game.PortableGame -> msg) -> Sub msg
 
-gameToPortable : Game -> PortableGame
+gameToPortable : Game.Game -> Game.PortableGame
 gameToPortable game =
   { game |
       cities = Dict.toList game.cities
@@ -15,11 +15,11 @@ gameToPortable game =
     , cityBlockTypes = Dict.toList (Dict.map cityBlockTypeToPortable game.cityBlockTypes)
   }
 
-cityBlockTypeToPortable : String -> CityBlockType -> PortableCityBlockType
+cityBlockTypeToPortable : String -> Game.CityBlockType -> Game.PortableCityBlockType
 cityBlockTypeToPortable key cityBlockType =
   { cityBlockType | effects = (List.map cityBlockEffectToValue cityBlockType.effects) }
 
-gameFromPortable : PortableGame -> Game
+gameFromPortable : Game.PortableGame -> Game.Game
 gameFromPortable portGame =
   { portGame |
       cities = Dict.fromList portGame.cities
@@ -27,24 +27,24 @@ gameFromPortable portGame =
     , cityBlockTypes = Dict.map cityBlockTypeFromPortable (Dict.fromList portGame.cityBlockTypes)
   }
 
-cityBlockTypeFromPortable : String -> PortableCityBlockType -> CityBlockType
+cityBlockTypeFromPortable : String -> Game.PortableCityBlockType -> Game.CityBlockType
 cityBlockTypeFromPortable key portCityBlockType =
   { portCityBlockType | effects = (List.map cityBlockEffectFromValue portCityBlockType.effects)}
 
-cityBlockEffectFromValue : (String, Int) -> CityBlockEffect
+cityBlockEffectFromValue : (String, Int) -> Game.CityBlockEffect
 cityBlockEffectFromValue (effect, value) =
   case effect of
-    "PlusAction" -> Game.Types.PlusAction value
-    "PlusBuy" -> Game.Types.PlusBuy value
-    "PlusPower" -> Game.Types.PlusPower value
-    "PlusCoins" -> Game.Types.PlusCoins value
-    _ -> Game.Types.NoEffect
+    "PlusAction" -> Game.PlusAction value
+    "PlusBuy" -> Game.PlusBuy value
+    "PlusPower" -> Game.PlusPower value
+    "PlusCoins" -> Game.PlusCoins value
+    _ -> Game.NoEffect
 
-cityBlockEffectToValue : CityBlockEffect -> (String, Int)
+cityBlockEffectToValue : Game.CityBlockEffect -> (String, Int)
 cityBlockEffectToValue effect =
   case effect of
-    Game.Types.PlusAction value -> ("PlusAction", value)
-    Game.Types.PlusBuy value -> ("PlusBuy", value)
-    Game.Types.PlusPower value -> ("PlusPower", value)
-    Game.Types.PlusCoins value -> ("PlusCoins", value)
-    Game.Types.NoEffect -> ("NoEffect", 0)
+    Game.PlusAction value -> ("PlusAction", value)
+    Game.PlusBuy value -> ("PlusBuy", value)
+    Game.PlusPower value -> ("PlusPower", value)
+    Game.PlusCoins value -> ("PlusCoins", value)
+    Game.NoEffect -> ("NoEffect", 0)

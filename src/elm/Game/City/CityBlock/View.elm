@@ -5,8 +5,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing ( onClick )
 
-import Game.Types as GameTypes exposing (Game, CityBlock)
-import Game.City.CityBlock.Types exposing (..)
+import Game.Model as GameTypes exposing (Game, CityBlock)
+import Game.City.CityBlock.Msg exposing (..)
 
 view : Game -> Bool -> CityBlock -> Html Msg
 view game activatable cityBlock =

@@ -1,18 +1,19 @@
 module Game.Selectors exposing (
-  currentCity,
-  currentCityBlocks,
-  cityBlock,
   actionsRemainingForCity,
   buysRemainingForCity,
-  coinsRemainingForCity
+  cityBlock,
+  cityBlockType,
+  coinsRemainingForCity,
+  currentCity,
+  currentCityBlocks
   )
 
 import Array exposing (Array)
 import Dict exposing (Dict)
 
 import Config exposing (defaultActionCount, defaultBuyCount)
-import Game.City.Types exposing (City)
-import Game.Types exposing (Game, CityBlock, CityBlockEffect)
+import Game.City.Model exposing (City)
+import Game.Model as Game exposing (Game, CityBlock, CityBlockEffect, CityBlockType)
 
 currentCity : Game -> Maybe City
 currentCity game =
@@ -31,22 +32,25 @@ currentCityBlocks game =
 cityBlock : Game -> String -> Maybe CityBlock
 cityBlock game cityBlockId = Dict.get cityBlockId game.cityBlocks
 
+cityBlockType : Game -> String -> Maybe CityBlockType
+cityBlockType game cityBlockTypeId = Dict.get cityBlockTypeId game.cityBlockTypes
+
 plusActionsEffect : CityBlockEffect -> Int -> Int
 plusActionsEffect effect soFar =
   case effect of
-    Game.Types.PlusAction value -> soFar + value
+    Game.PlusAction value -> soFar + value
     _ -> soFar
 
 plusBuysEffect : CityBlockEffect -> Int -> Int
 plusBuysEffect effect soFar =
   case effect of
-    Game.Types.PlusBuy value -> soFar + value
+    Game.PlusBuy value -> soFar + value
     _ -> soFar
 
 plusCoinsEffect : CityBlockEffect -> Int -> Int
 plusCoinsEffect effect soFar =
   case effect of
-    Game.Types.PlusCoins value -> soFar + value
+    Game.PlusCoins value -> soFar + value
     _ -> soFar
 
 activatedCityBlocks : Game -> City -> (List CityBlock)

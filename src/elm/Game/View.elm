@@ -5,10 +5,12 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 
-import Game.Types exposing (..)
+import Game.Model exposing (..)
+import Game.Msg as Game
 import Game.City.View as CityView
+import Game.Shop.View as ShopView
 
-view : Game -> Html Msg
+view : Game -> Html Game.Msg
 view game =
   div [ class "container" ][
     div [ class "row" ][
@@ -17,7 +19,8 @@ view game =
     , ul
         []
         (List.map (\city -> CityView.view game city) (Dict.values game.cities))
-    , button [ class "btn", onClick CreateGame ] [ text "New Game" ]
-    , button [ class "btn", onClick NextTurn ] [ text "Next Turn" ]
+    , button [ class "btn", onClick Game.CreateGame ] [ text "New Game" ]
+    , button [ class "btn", onClick Game.NextTurn ] [ text "Next Turn" ]
+    , Html.map Game.MsgForShop (ShopView.view game)
     ]
   ]

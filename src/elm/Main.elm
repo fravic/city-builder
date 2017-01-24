@@ -4,11 +4,12 @@ import Html
 import Platform exposing (..)
 import Random exposing (initialSeed)
 
-import Types exposing (..)
+import Model exposing (..)
 import Ports exposing (gameFromPortable, gameToPortable, readPort, writePort)
 
 import Game.State
 import Game.View
+import Msg exposing (Msg)
 
 -- APP
 main : Program Flags Model Msg
@@ -31,15 +32,15 @@ init flags =
 
 -- SUBSCRIPTIONS
 subscriptions : Model -> Sub Msg
-subscriptions model = Game.State.subscriptions model.game |> Sub.map MsgForGame
+subscriptions model = Game.State.subscriptions model.game |> Sub.map Msg.MsgForGame
 
 
 -- UPDATE
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    NoOp -> (model, Cmd.none)
-    MsgForGame msg ->
+    Msg.NoOp -> (model, Cmd.none)
+    Msg.MsgForGame msg ->
       let
         (nextGame, nextRandSeed) = Game.State.update msg model.randomSeed model.game
       in
@@ -48,4 +49,4 @@ update msg model =
 
 -- VIEW
 view : Model -> Html.Html Msg
-view model = Html.map Types.MsgForGame (Game.View.view model.game)
+view model = Html.map Msg.MsgForGame (Game.View.view model.game)
