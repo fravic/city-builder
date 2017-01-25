@@ -8,6 +8,7 @@ import Game.Model exposing (CityBlockType, Game, Purchasable)
 import Game.Shop.Selectors exposing (cityBlockTypesRemaining)
 import Game.Shop.Msg exposing (..)
 
+-- TODO: Only let players buy a city block if they have enough coins and if there is a city block left
 cityBlockTypeView : (CityBlockType, Int) -> Html Msg
 cityBlockTypeView (cityBlockType, remaining) =
   div [class "purchasable", onClick (Purchase cityBlockType)] [
