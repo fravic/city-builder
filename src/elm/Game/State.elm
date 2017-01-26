@@ -34,7 +34,7 @@ initial =
       [ ("cbt0",
           { id = "cbt0"
           , name = "Restaurant"
-          , cost = 3
+          , cost = 1
           , effects = [
               PlusPower 1
             , PlusAction 2
@@ -43,7 +43,7 @@ initial =
       , ("cbt1",
           { id = "cbt1"
           , name = "Bank"
-          , cost = 3
+          , cost = 1
           , effects = [
               PlusBuy 1
             , PlusCoins 2

@@ -43,3 +43,4 @@ update msg game =
     Purchase cityBlockType ->
       giveCurrentPlayerCityBlockType cityBlockType game
       |> decrementPurchasablesRemaining cityBlockType
+    NoOp -> game

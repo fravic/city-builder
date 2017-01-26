@@ -8,20 +8,48 @@ import Game.Model exposing (CityBlockType, Game, Purchasable)
 import Game.Shop.Selectors exposing (cityBlockTypesRemaining)
 import Game.Shop.Msg exposing (..)
 
--- TODO: Only let players buy a city block if they have enough coins and if there is a city block left
-cityBlockTypeView : (CityBlockType, Int) -> Html Msg
-cityBlockTypeView (cityBlockType, remaining) =
-  div [class "purchasable", onClick (Purchase cityBlockType)] [
-    text cityBlockType.name,
-    text (toString remaining)
-  ]
+import Game.Selectors exposing (
+  buysRemainingForCity,
+  coinsRemainingForCity,
+  currentCity
+  )
+
+clickPurchasable : Bool -> CityBlockType -> Msg
+clickPurchasable canPurchase cityBlockType =
+  if canPurchase
+    then Purchase cityBlockType
+    else NoOp
+
+stylePurchasable : Bool -> List (String, String)
+stylePurchasable canPurchase =
+  if canPurchase
+    then [("color", "black")]
+    else [("color", "gray")]
+
+cityBlockTypeView : Int -> Int -> (CityBlockType, Int) -> Html Msg
+cityBlockTypeView buysAvailable coinsAvailable (cityBlockType, remaining) =
+  let
+    canPurchase = buysAvailable > 0 && coinsAvailable > cityBlockType.cost && remaining > 0
+  in
+    div [
+      style (stylePurchasable canPurchase)
+    , onClick (clickPurchasable canPurchase cityBlockType)
+    ] [
+      text cityBlockType.name
+    , text " "
+    , text (toString remaining)
+    ]
 
 view : Game -> Html Msg
 view game =
   let
     cityBlockTypes = cityBlockTypesRemaining game
+    (buysRemaining, coinsRemaining) = currentCity game
+      |> Maybe.andThen (\city ->
+          Just (buysRemainingForCity game city, coinsRemainingForCity game city))
+      |> Maybe.withDefault (0, 0)
   in
     div [class "shop"] [
       h1 [] [text "Shop"]
-    , ul [] (List.map cityBlockTypeView cityBlockTypes)
+    , ul [] (List.map (cityBlockTypeView buysRemaining coinsRemaining) cityBlockTypes)
     ]
