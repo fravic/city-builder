@@ -32,7 +32,8 @@ type alias CityBlock = {
   id: String,
   cityBlockTypeId: String,
   activated: Bool,
-  powered: Bool
+  powered: Bool,
+  justPurchased: Bool
 }
 
 type CityBlockEffect = NoEffect | PlusAction Int | PlusBuy Int | PlusPower Int | PlusCoins Int

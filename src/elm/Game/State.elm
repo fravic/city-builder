@@ -26,9 +26,9 @@ initial =
       , ("c1", { id = "c1", name = "Toronto", cityBlockIds = [ "cb1" ] })
       ]
   , cityBlocks = Dict.fromList
-      [ ("cb0", { id = "cb0", cityBlockTypeId = "cbt0", activated = False, powered = False })
-      , ("cb1", { id = "cb1", cityBlockTypeId = "cbt1", activated = False, powered = False })
-      , ("cb2", { id = "cb2", cityBlockTypeId = "cbt1", activated = False, powered = False })
+      [ ("cb0", { id = "cb0", cityBlockTypeId = "cbt0", activated = False, powered = False, justPurchased = False })
+      , ("cb1", { id = "cb1", cityBlockTypeId = "cbt1", activated = False, powered = False, justPurchased = False })
+      , ("cb2", { id = "cb2", cityBlockTypeId = "cbt1", activated = False, powered = False, justPurchased = False })
       ]
   , cityBlockTypes = Dict.fromList
       [ ("cbt0",
@@ -63,7 +63,8 @@ deactivateAllCityBlocks game =
   let
     deactivateCityBlock = \(id, cityBlock) -> (id, { cityBlock |
       activated = False
-    , powered = False })
+    , powered = False
+    , justPurchased = False })
     nextCityBlocks = Dict.toList game.cityBlocks
       |> List.map deactivateCityBlock
       |> Dict.fromList

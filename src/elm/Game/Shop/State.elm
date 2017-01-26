@@ -15,6 +15,7 @@ giveCurrentPlayerCityBlockType cityBlockType game =
     , cityBlockTypeId = cityBlockType.id
     , activated = False
     , powered = False
+    , justPurchased = True
     }
     nextCities =
       case currentCity of

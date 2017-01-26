@@ -80,8 +80,21 @@ buysRemainingForCity : Game -> City -> Int
 buysRemainingForCity game city =
   let
     plusBuys = (sumCityBlockEffects plusBuysEffect) game city
+    minusBuys = List.filterMap (cityBlock game) city.cityBlockIds
+      |> List.filter .justPurchased
+      |> List.length
   in
-    (plusBuys + defaultBuyCount) -- TODO: Factor in how many buys the player has performed this turn
+    (plusBuys - minusBuys + defaultBuyCount)
 
 coinsRemainingForCity : Game -> City -> Int
-coinsRemainingForCity = sumCityBlockEffects plusCoinsEffect
+coinsRemainingForCity game city =
+  let
+    plusCoins = (sumCityBlockEffects plusCoinsEffect) game city
+    minusCoins = List.filterMap (cityBlock game) city.cityBlockIds
+      |> List.filter .justPurchased
+      |> List.map .cityBlockTypeId
+      |> List.filterMap (cityBlockType game)
+      |> List.map .cost
+      |> List.foldr (+) 0
+  in
+    plusCoins - minusCoins

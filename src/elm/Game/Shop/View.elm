@@ -29,7 +29,7 @@ stylePurchasable canPurchase =
 cityBlockTypeView : Int -> Int -> (CityBlockType, Int) -> Html Msg
 cityBlockTypeView buysAvailable coinsAvailable (cityBlockType, remaining) =
   let
-    canPurchase = buysAvailable > 0 && coinsAvailable > cityBlockType.cost && remaining > 0
+    canPurchase = buysAvailable > 0 && coinsAvailable >= cityBlockType.cost && remaining > 0
   in
     div [
       style (stylePurchasable canPurchase)
