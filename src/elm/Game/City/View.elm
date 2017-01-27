@@ -21,7 +21,6 @@ view game city =
   let
     currentPlayer = (currentCity game) == Just city
     actionsRemaining = (actionsRemainingForCity game city)
-    activatable = currentPlayer && actionsRemaining > 0
     cityBlocks = city.cityBlockIds
       |> List.filterMap (\cityBlockId -> Dict.get cityBlockId game.cityBlocks)
   in
@@ -45,7 +44,7 @@ view game city =
           []
           (List.map (\cityBlock ->
             Html.map (Game.MsgForCityBlock cityBlock.id) (
-              CityBlockView.view game activatable cityBlock
+              CityBlockView.view game currentPlayer actionsRemaining cityBlock
             )
           ) cityBlocks)
         )

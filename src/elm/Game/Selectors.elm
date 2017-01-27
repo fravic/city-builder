@@ -72,9 +72,11 @@ actionsRemainingForCity : Game -> City -> Int
 actionsRemainingForCity game city =
   let
     plusActions = (sumCityBlockEffects plusActionsEffect) game city
-    activatedCityBlocksCount = List.length (activatedCityBlocks game city)
+    activatedBlockTypes = (activatedCityBlocks game city)
+      |> List.filterMap (.cityBlockTypeId >> (cityBlockType game))
+    activatedBlockCost = List.foldr (\block sum -> sum + block.actionCost) 0 activatedBlockTypes
   in
-    (plusActions + defaultActionCount) - activatedCityBlocksCount
+    (plusActions + defaultActionCount) - activatedBlockCost
 
 buysRemainingForCity : Game -> City -> Int
 buysRemainingForCity game city =

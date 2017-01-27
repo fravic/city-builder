@@ -42,14 +42,16 @@ type alias CityBlockType = {
   id: String,
   name: String,
   cost: Int,
-  effects: List CityBlockEffect
+  effects: List CityBlockEffect,
+  actionCost: Int
 }
 
 type alias PortableCityBlockType = {
   id: String,
   name: String,
   cost: Int,
-  effects: List (String, Int)
+  effects: List (String, Int),
+  actionCost: Int
 }
 
 type alias Purchasable = {

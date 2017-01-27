@@ -39,6 +39,7 @@ initial =
               PlusPower 1
             , PlusAction 2
             ]
+          , actionCost = 1
           })
       , ("cbt1",
           { id = "cbt1"
@@ -48,11 +49,22 @@ initial =
               PlusBuy 1
             , PlusCoins 2
             ]
+          , actionCost = 1
+          })
+      , ("cbt2",
+          { id = "cbt2"
+          , name = "Startup"
+          , cost = 1
+          , effects = [
+              PlusCoins 2
+            ]
+          , actionCost = 0
           })
       ]
   , purchasables = [
       { remaining = 10, cityBlockTypeId = "cbt0" }
     , { remaining = 10, cityBlockTypeId = "cbt1" }
+    , { remaining = 10, cityBlockTypeId = "cbt2" }
     ]
   , turnCounter = 0
   }
