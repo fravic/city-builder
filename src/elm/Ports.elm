@@ -34,17 +34,19 @@ cityBlockTypeFromPortable key portCityBlockType =
 cityBlockEffectFromValue : (String, Int) -> Game.CityBlockEffect
 cityBlockEffectFromValue (effect, value) =
   case effect of
+    "EndgameVictoryPoints" -> Game.EndgameVictoryPoints value
     "PlusAction" -> Game.PlusAction value
     "PlusBuy" -> Game.PlusBuy value
-    "PlusPower" -> Game.PlusPower value
     "PlusCoins" -> Game.PlusCoins value
+    "PlusPower" -> Game.PlusPower value
     _ -> Game.NoEffect
 
 cityBlockEffectToValue : Game.CityBlockEffect -> (String, Int)
 cityBlockEffectToValue effect =
   case effect of
+    Game.EndgameVictoryPoints value -> ("EndgameVictoryPoints", value)
     Game.PlusAction value -> ("PlusAction", value)
     Game.PlusBuy value -> ("PlusBuy", value)
-    Game.PlusPower value -> ("PlusPower", value)
     Game.PlusCoins value -> ("PlusCoins", value)
+    Game.PlusPower value -> ("PlusPower", value)
     Game.NoEffect -> ("NoEffect", 0)

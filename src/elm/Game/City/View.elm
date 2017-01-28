@@ -12,6 +12,9 @@ import Game.Selectors exposing (
   coinsRemainingForCity,
   currentCity
   )
+import Game.City.Selectors exposing (
+  endgameVictoryPointsForCity
+  )
 import Game.Model exposing (..)
 import Game.Msg as Game
 import Game.City.Model exposing (..)
@@ -37,6 +40,10 @@ view game city =
     , (div [] [
         (text "Coins:")
       , (text (coinsRemainingForCity game city |> toString))
+      ])
+    , (div [] [
+        (text "VP:")
+      , (text (endgameVictoryPointsForCity game city |> toString))
       ])
     , (div [] [
         (text "City Blocks")

@@ -60,11 +60,21 @@ initial =
             ]
           , actionCost = 0
           })
+      , ("cbt3",
+          { id = "cbt3"
+          , name = "House"
+          , cost = 1
+          , effects = [
+              EndgameVictoryPoints 1
+            ]
+          , actionCost = 0
+          })
       ]
   , purchasables = [
       { remaining = 10, cityBlockTypeId = "cbt0" }
     , { remaining = 10, cityBlockTypeId = "cbt1" }
     , { remaining = 10, cityBlockTypeId = "cbt2" }
+    , { remaining = 10, cityBlockTypeId = "cbt3" }
     ]
   , turnCounter = 0
   }
