@@ -7,11 +7,10 @@ import Random exposing (..)
 import Config exposing (defaultPowerCount)
 import Ports exposing (gameFromPortable, gameToPortable, readPort, writePort)
 import Game.City.CityBlock.State as CityBlockState
-import Game.Selectors exposing (currentCity, currentCityBlocks)
+import Game.Selectors exposing (cityBlock, currentCity)
 import Game.Model exposing (..)
 import Game.Msg exposing (..)
 import Game.Shop.State as ShopState
-import Utils exposing (shuffleList)
 
 -- INITIAL
 initial : Game
@@ -96,31 +95,13 @@ deactivateAllCityBlocks game =
 advanceGameTurn : Game -> Game
 advanceGameTurn game = { game | turnCounter = game.turnCounter + 1 }
 
--- TODO: Only power up unpowered city blocks
-powerUpRandomCityBlocks : Seed -> Game -> (Game, Seed)
-powerUpRandomCityBlocks randSeed game =
-  let
-    powerUpFirstFew = \idx cityBlock ->
-      if idx < defaultPowerCount
-        then { cityBlock | powered = True }
-        else cityBlock
-
-    cityBlocks = currentCityBlocks game
-    (shuffledCityBlocks, nextRandSeed) = (shuffleList randSeed cityBlocks)
-    poweredCityBlocks = (List.indexedMap powerUpFirstFew shuffledCityBlocks)
-      |> List.map (\cityBlock -> (cityBlock.id, cityBlock))
-      |> Dict.fromList
-    nextGame = { game | cityBlocks = (Dict.union poweredCityBlocks game.cityBlocks) }
-  in
-    (nextGame, nextRandSeed)
-
 nextTurn : Seed -> Game -> (Game, Seed)
 nextTurn randomSeed game =
   let
     (nextGame, nextRandSeed) = game
         |> deactivateAllCityBlocks
         |> advanceGameTurn
-        |> powerUpRandomCityBlocks randomSeed
+        |> CityBlockState.powerUpRandomCityBlocks randomSeed defaultPowerCount
   in
     (nextGame, nextRandSeed)
 
@@ -135,14 +116,9 @@ update msg seed game =
     ReadGame portGame ->
       (gameFromPortable portGame, seed)
     MsgForCityBlock cityBlockId msg ->
-      let
-        setCityBlock = \nextCityBlock -> Just { game | cityBlocks = Dict.union (Dict.singleton cityBlockId nextCityBlock) game.cityBlocks }
-        nextGame = Dict.get cityBlockId game.cityBlocks
-          |> Maybe.andThen (\cityBlock -> Just (CityBlockState.update msg cityBlock))
-          |> Maybe.andThen setCityBlock
-          |> Maybe.withDefault game
-      in
-        (nextGame, seed)
+      cityBlock game cityBlockId
+        |> Maybe.andThen (CityBlockState.update msg seed game >> Just)
+        |> Maybe.withDefault (game, seed)
     MsgForShop msg ->
       (ShopState.update msg game, seed)
 
